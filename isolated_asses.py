@@ -1,11 +1,12 @@
-from chap_core.api_types import PeriodObservation
-from chap_core.datatypes import HealthData
-from chap_core.spatio_temporal_data.temporal_dataclass import DataSet
+#from chap_core.api_types import PeriodObservation
+#from chap_core.datatypes import HealthData
+#from chap_core.spatio_temporal_data.temporal_dataclass import DataSet
 
 from evaluator import ComponentBasedEvaluator
-from example_component_based_evaluator import mae_error, mean_across_time, mse_error, sqrt_mean_across_time, \
+from example_component_based_evaluator import mae_error, smape_error, mean_across_time, mse_error, sqrt_mean_across_time, \
     mean_across_regions
 from example_evaluator import MAEonMeanPredictions
+from new_evaluators import EvaluatorsonMeanPredictions
 from representations import DiseaseObservation, Forecast, MultiLocationDiseaseTimeSeries, DiseaseTimeSeries, Samples, \
     MultiLocationForecast, MultiLocationErrorTimeSeries
 
@@ -47,20 +48,32 @@ samples = MultiLocationForecast(
 # samples_dataset = DataSet.from_period_observations(samples)
 MAE_evaluator = MAEonMeanPredictions()
 mae = MAE_evaluator.evaluate(observations, samples)
-print(f"MAE: {mae}")
+print(f"\nMAE: {mae}")
+
+NEW_evaluator = EvaluatorsonMeanPredictions()
+smape = NEW_evaluator.evaluate(observations, samples)
+print(f"\nSMAPE: {smape}")
 
 mae_component_evaluator = ComponentBasedEvaluator("MAE", mae_error, mean_across_time, None)
 mae2 = mae_component_evaluator.evaluate(observations, samples)
-print(f"MAE component-based: {mae2}")
+print(f"\nMAE component-based: {mae2}")
+
+smape_component_evaluator = ComponentBasedEvaluator("SMAPE", smape_error, mean_across_time, None)
+smape2 = smape_component_evaluator.evaluate(observations, samples)
+print(f"\nSMAPE component-based: {smape2}")
 
 mae_country_evaluator = ComponentBasedEvaluator("MAE country", mae_error, mean_across_time, mean_across_regions)
 mae_country = mae_country_evaluator.evaluate(observations, samples)
-print(f"MAE country: {mae_country}")
+print(f"\nMAE country: {mae_country}")
+
+smape_country_evaluator = ComponentBasedEvaluator("SMAPE country", smape_error, mean_across_time, mean_across_regions)
+smape_country = smape_country_evaluator.evaluate(observations, samples)
+print(f"\nSMAPE country: {smape_country}")
 
 absError_timepoint_evaluator = ComponentBasedEvaluator("MAE timpeoint", mae_error, None, None)
 mae_timepoint = absError_timepoint_evaluator.evaluate(observations, samples)
-print(f"MAE timpeoint: {mae_timepoint}")
+print(f"\nMAE timpeoint: {mae_timepoint}")
 
 rmse_evaluator = ComponentBasedEvaluator("rmse", mse_error, sqrt_mean_across_time, None)
 rmse = rmse_evaluator.evaluate(observations, samples)
-print(f"RMSE component-based: {rmse}")
+print(f"\nRMSE component-based: {rmse}")

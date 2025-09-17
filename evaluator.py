@@ -1,6 +1,8 @@
 from representations import MultiLocationDiseaseTimeSeries, MultiLocationForecast, \
     MultiLocationErrorTimeSeries, ErrorTimeSeries, Error
 
+
+
 from abc import ABC, abstractmethod
 
 # class Evaluator(ABC):
@@ -37,9 +39,11 @@ class ComponentBasedEvaluator(Evaluator):
             truth_and_forecast_series = zip(all_truths[location].observations, forecast_series.predictions)
             errors = []
             for truth,prediction in truth_and_forecast_series:
+
                 assert truth.time_period == prediction.time_period
                 errors.append( self._errorFunc(truth.disease_cases, prediction.disease_case_samples) )
                 if self._timeAggregationFunc is None:
+
                     current_error_series.observations.append(Error(time_period=truth.time_period, value=errors[-1]))
             if self._timeAggregationFunc is not None:
                 current_error_series.observations.append(Error(time_period="Full_period",
@@ -49,6 +53,7 @@ class ComponentBasedEvaluator(Evaluator):
         if self._regionAggregationFunc is not None:
             final_evaluation_result = MultiLocationErrorTimeSeries(timeseries_dict={"Full_region" : ErrorTimeSeries(observations=[])})
             for locationvalues in evaluation_result.locationvalues_per_timepoint():
+                
                 aggregated_error = self._regionAggregationFunc([error.value for error in locationvalues.values()])
                 final_evaluation_result["Full_region"].observations.append(Error(time_period="Full_period", value=aggregated_error))
         else:
