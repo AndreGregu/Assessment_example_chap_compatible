@@ -7,7 +7,7 @@ This tutorial provides a guide to and examples of how to do develop a new (custo
 
 ## Some background on evaluation metrics
 
-When evaluating a chap-compatible model with chap, the model will give some of `samples` for every `time_period` (e.g. a week in some year) for every `location` (e.g. a district in a country). An important detail is that this is done for different **split points** in the dataset. For each such split point, the model will predict a certain number of periods (e.g. weeks a head).
+When evaluating a chap-compatible model with chap, the model will give some `samples` for every `time_period` (e.g. a week in some year) for every `location` (e.g. a district in a country). An important detail is that this is done for different **split points** in the dataset. For each such split point, the model will predict a certain number of periods (e.g. weeks a head).
 
 This means that every predicted disease case can be tied to four variables:
 
@@ -16,7 +16,7 @@ This means that every predicted disease case can be tied to four variables:
 - `horizon_distance`  (how far from a split point was this prediction made)
 - `sample` (just an index for the sample, if the model gives 10 predictions for this location/time_period/horizon_distance, then this will go from 0 to 9)
 
-In chap, we represent all this information using a "flat" pandas dataframe. Below is an example of the predictions given by a model for two different locations two weeks ahead:
+When dealing with metrics in chap, we represent all this information using a "flat" pandas dataframe. Below is an example of the predictions given by a model for two different locations two weeks ahead:
 
 ```
   location time_period  horizon_distance  sample  forecast
@@ -25,6 +25,8 @@ In chap, we represent all this information using a "flat" pandas dataframe. Belo
 2     loc2    2023-W01                 1       1        21
 3     loc2    2023-W02                 2       1        23
 ```
+
+From the above data, we can see that the model just gave one sample for each location/time_period/horizon_distance combination. Also, there was only one split point (and two horizon distances, meaning the model predicted two weeks ahead). Note that all this could vary based on the evaluation setup and the model.
 
 The "true" observations can be represented in a similar way, except that we don't need to represent the sample index for true observations:
 
@@ -38,9 +40,9 @@ The "true" observations can be represented in a similar way, except that we don'
 
 ### Metrics in chap
 
-Metrics in chap are then functions that takes observed disease cases and predicted cases in the format shown above and returns a dataframe with the metric.
+Metrics in chap are in principle functions that take observed disease cases and predicted cases in the format shown above and returns a dataframe with the metric.
 
-The output format is a dataframe with columns corresponding to what "level of detail" the metric has been computed for. For instance, if a metric is computed for each location, the output columns will be "location" and "metric" k
+The output format is a dataframe with columns corresponding to what "level of detail" the metric has been computed for. For instance, if a metric is computed for each location, the output columns will be "location" and "metric", e.g:
 
 ```
     location  metric
@@ -61,7 +63,9 @@ However, a metric is free to aggregate over locations, time_periods or horizon_d
 
 ## Isolated example: Starting by implementing a simple metric outside of chap
 
-Since a metric only depends on these simple pandas dataframes, it is easy to implement new metrics as functions outside of chap. This is useful for testing and debugging. Later in this guide, we show how to move a metric inside chap so that it can be used in the platform (e.g. to generate plots in the modeling app). This only requires implement the metric function in a class that follows a interface.
+Since a metric only depends on these simple pandas dataframes, it is easy to implement new metrics as a function outside of chap. 
+This is useful for testing and debugging. Later in this guide, we show how to move a metric inside chap so that it can be used in the platform (e.g. to generate plots in the modeling app). 
+This only requires implementing the metric function in a class that follows a interface.
 
 This example only requires that you have pandas installed.
 
