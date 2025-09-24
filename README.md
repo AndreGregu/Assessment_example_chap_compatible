@@ -1,3 +1,6 @@
+
+NOTE! This tutorial has been updated. Go the the main branch to see the old version.
+
 # CHAP-compatible example of model assessment 
 This tutorial provides a guide to and examples of how to do develop a new (custom) evaluation metric that can be used for model evaluation in CHAP.
 
