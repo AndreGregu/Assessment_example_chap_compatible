@@ -2,125 +2,143 @@
 This tutorial provides a guide to and examples of how to do develop a new (custom) evaluation metric that can be used for model evaluation in CHAP.
 
 
-## Representations of Observations and Predictions
-Observations and predictions are each represented using a nested dataclass structure. This design choice reflects the nature of the data: each datapoint connects a specific time period, region, and value (which may be a single value or a set of samples).
+## Some background on evaluation metrics
 
-To avoid a flat and error-prone representation, and to increase flexibility, the following structure is used:
+When evaluating a chap-compatible model with chap, the model will give some of `samples` for every `time_period` (e.g. a week in some year) for every `location` (e.g. a district in a country). An important detail is that this is done for different **split points** in the dataset. For each such split point, the model will predict a certain number of periods (e.g. weeks a head).
 
-1. **Datapoint**: Represents a single observation or prediction, containing the time period and data (e.g., a scalar or a list of samples).
+This means that every predicted disease case can be tied to four variables:
 
-2. **TimeSeries**: A dataclass that holds a list of `Datapoint` instances for a single region, ordered by time.
+- `location`
+- `time_period`
+- `horizon_distance`  (how far from a split point was this prediction made)
+- `sample` (just an index for the sample, if the model gives 10 predictions for this location/time_period/horizon_distance, then this will go from 0 to 9)
 
-3. **RegionDict**: A dictionary mapping region identifiers to their corresponding `TimeSeries`.
+In chap, we represent all this information using a "flat" pandas dataframe. Below is an example of the predictions given by a model for two different locations two weeks ahead:
 
+```
+  location time_period  horizon_distance  sample  forecast
+0     loc1    2023-W01                 1       1        10
+1     loc1    2023-W02                 2       1        12
+2     loc2    2023-W01                 1       1        21
+3     loc2    2023-W02                 2       1        23
+```
 
-The representation of disease cases and error includes utility methods which streamlines tasks like reordering, transforming, or flattening the data.
+The "true" observations can be represented in a similar way, except that we don't need to represent the sample index for true observations:
 
+```
+  location time_period  disease_cases
+0     loc1    2023-W01           11.0
+1     loc1    2023-W02           13.0
+2     loc2    2023-W01           19.0
+3     loc2    2023-W02           21.0
+```
 
+### Metrics in chap
 
-An example of the structure for forecast data:
-```python
+Metrics in chap are then functions that takes observed disease cases and predicted cases in the format shown above and returns a dataframe with the metric.
 
-#Forecasts
+The output format is a dataframe with columns corresponding to what "level of detail" the metric has been computed for. For instance, if a metric is computed for each location, the output columns will be "location" and "metric" k
 
-@dataclass
-class Samples:
-    time_period: str
-    disease_case_samples: List[float]
+```
+    location  metric
+0      loc1    1.0
+1      loc2    2.0
+```
 
+However, a metric is free to aggregate over locations, time_periods or horizon_distance as it sees fit. For instance, a metric that only aggregates over time_periods might give this output:
 
-@dataclass
-class Forecast:
-    predictions: List[Samples]
-
-
-@dataclass
-class MultiLocationForecast:
-    timeseries: Dict[str,Forecast]
+```
+    location  horizon_distance  metric
+0      loc1                 1    0.5
+1      loc2                 1    0.6
+2      loc1                 2    0.7
+3      loc2                 2    0.8
 ```
 
 
-## Isolated assessment example using this data-representation
-Before getting a new model to work as part of CHAP, it can be useful to develop and debug it while running it directly a small dataset.
+## Isolated example: Starting by implementing a simple metric outside of chap
 
+Since a metric only depends on these simple pandas dataframes, it is easy to implement new metrics as functions outside of chap. This is useful for testing and debugging. Later in this guide, we show how to move a metric inside chap so that it can be used in the platform (e.g. to generate plots in the modeling app). This only requires implement the metric function in a class that follows a interface.
 
-The example can be run in isolation (e.g. from the command line) using the file isolated_asses.py:
-```bash
-python isolated_asses.py
-
-```
-
-The example uses arbitrary disease data and predictions in the nested format, then applies multiple predefined evaluators to compute various error metrics.
-
-
-
-## Manually writing custom evaluators
-The Chap platform can be extended with new (custom) evaluation criteria that based on data in the previously discussed observation and prediction representation defines a new computation according to the evaluator interface found in `evaluator.py`
-
-
-
-### The Evaluator interface
-For an evaluator to be CHAP-compatible, it needs to implement the evaluate interface defined in the Evaluator abstract class. The abstract class consists of the following two methods:
-
-
-1. **evaluate**: A method which takes full datastructures for true values and predictions as arguments, and returns a representation of the model’s error. Note that the error data structure can be aggregated over regions or time (does not necessarily contain values for individual regions and time points of the data being evaluated).  
-```python
-    def evaluate(self, all_truths: MultiLocationDiseaseTimeSeries, all_forecasts: MultiLocationForecast) -> MultiLocationErrorTimeSeries:
-        pass
-```
-
-
-2. **get_name**: A method which returns the name of the evaluator (to be shown as a name for the defined metric).
+This example only requires that you have pandas installed.
 
 ```python
-    def get_name(self) -> str:
-        return self.__class__.__name__
+import pandas as pd
+    
+forecasts = pd.DataFrame(
+    {
+        "location": ["loc1", "loc1", "loc2", "loc2"],
+        "time_period": ["2023-W01", "2023-W02", "2023-W01", "2023-W02"],
+        "horizon_distance": [1, 2, 1, 2],
+        "sample": [1, 1, 1, 1],
+        "forecast": [10, 12, 21, 23],
+    }
+)
+
+
+observations = pd.DataFrame(
+    {
+        "location": ["loc1", "loc1", "loc2", "loc2"],
+        "time_period": ["2023-W01", "2023-W02", "2023-W01", "2023-W02"],
+        "disease_cases": [11.0, 13.0, 19.0, 21.0],
+    }
+)
+
+
+def my_metric(forecasts: pd.DataFrame, observations: pd.DataFrame) -> pd.DataFrame:
+    # sum of absolute error per location and time_period
+    merged = forecasts.merge(observations, on=["location", "time_period"], how="left")
+    merged["metric"] = (merged["forecast"] - merged["disease_cases"]).abs()
+    return merged[["location", "time_period", "metric"]]
+
+print(my_metric(forecasts, observations))
+```
+
+This code can also be found in isolated_asses.py. Feel free to play around with it and try to implement other metrics. The output from running `isolated_asses.py` should look like this:
+
+```
+  location time_period  metric
+0     loc1    2023-W01     1.0
+1     loc1    2023-W02     1.0
+2     loc2    2023-W01     2.0
+3     loc2    2023-W02     2.0
 ```
 
 
-#### Example of Evaluator classes
-The file `example_evaluator.py` contains an example of a custom evaluator called `MAEonMeanPredictions` which returns the Mean Absolute Error (MAE) for each region across time based on the observed value versus the mean of the prediction samples.
+## Implementing a custom metric that is compatible with chap
+Currently, metrics are implemented in chap-core in the assessment/metrics/ directory. A valid metric subclasses the MetricBase class and implements a compute method.
+
+The compute method is similar to a function implemented in the isolated_asses.py example above, but in chap-core we can take use of some typing to ease development.
+
+In the example_metric.py file, we have implemented the metric above in an ExampleMetric class. The code can also be found working inside chap-core in [example_metric.py](https://github.com/dhis2-chap/chap-core/blob/master/chap_core/assessment/metrics/example_metric.py) assessment/metrics/.
+
+Note the metric_spec variable. This is important in order to tell chap what the metric outputs:
+
+```python
+# ...
+spec = MetricSpec(
+        output_dimensions=(DataDimension.location, DataDimension.time_period),
+        metric_name="Example Absolute Error",
+        metric_id="example_metric",
+        description="Sum of absolute error per location and time_period",
+    )
+# ...
+```
+
+If you run `get_metric` on this class, chap will check that the output actually matches the spec. If for instance, you forget to specify location, you will get this error message from chap:
+
+```
+ValueError: ExampleMetric produced wrong columns.
+Expected: [<DataDimension.time_period: 'time_period'>, 'metric']
+Missing: []
+Extra: ['location']
+```
 
 
-### The generic component-based evaluator
-The file `evaluator.py` also includes an Evaluator subclass called `ComponentBasedEvaluator`, which allows to define a new evaluation metric by creating and combining components representing distinct aspects of evaluation. This class is typically used as-is and is not meant to be modified directly. Instead, you define your own custom components that you pass in to its init-method:
 
-- `errorFunc`: a loss function that computes the error between predicted and true values for a single region and time point.
+## Adding the metric to the chap-core codebase
+After succesfully implementing a chap-compatible metric, all that is needed in order to use it in chap is to add it to the available_metrics registry in chap-core/assessment/metrics/__init__.py. Typically, your metric would be in a separate file in the assessment/metrics/ directory, and you would import it in the __init__.py file and add it to the available_metrics dictionary.
 
-- `timeAggregationFunc`: a function that aggregates errors over time within a single region.
-
-- `regionAggregationFunc`: a function that aggregates the results across regions into a final score.
+If the metric is compatible with plotting (valid output dimensions), it will automatically be available as a plotting option in the modeling app in chap.
 
 
-These components define how the model’s performance is evaluated:
-
-- The **loss function** (`errorFunc`) operates at the individual datapoint or time-step level.
-
-- The **time aggregation function** (`timeAggregationFunc`) summarizes those errors over time for each region.
-
-- The **region aggregation function** (`regionAggregationFunc`) combines the per-region results into a single overall error metric.
-
-
-
-This modular approach provides a flexible and reusable evaluation logic. Examples of component functions can be found in `example_component_based_evaluator.py`.
-
-
-
-## Evaluator Suites
-In many cases, it's useful to evaluate a model using multiple complementary error metrics simultaneously. Additionally, how these metrics are presented can vary depending on the use case. To support this, we use **evaluator suites** — collections of evaluators grouped in a dictionary and processed together.
-
-The class `EvaluationPresenter` in `example_evaluator_suites.py` demonstrates how to run several evaluators at once and present their results in a structured and readable format. The example also shows how to define multiple suites, allowing users to choose between predefined sets of evaluators depending on their evaluation needs.
-
-This design makes it easy to compare models using a variety of metrics and presentation formats with minimal changes to the code.
-
-
-## Evaluating on real data
-This repository also includes a few illustrative examples of how to use this format to evaluate models trained on real data. For real usage with Chap, see a separate documentation of how an evaluation metric defined according to the interfaces described here (that follows the Evaluator abstract class) can be easily integrated into Chap and used as metric for any evaluation performed in that platform.
-
-
-### Evaluating `minimalist_example` with custom evaluator
-The file `asses_minimalist.py` is an extension of `asses_minimalist.py` from `Assessment_example_singlepred` which now uses a subclass of Evaluator to evaluate with MAE. 
-
-
-### Evaluating `minimalist_example` with evaluator suite
-In `example_evaluator_suites.py` it is shown an example of how to use evaluator suites and the `EvaluationPresenter` class to assess the same model and data from `minimalist_example`. The different evaluators are made from the `ComponentBasedEvaluator`.
