@@ -49,6 +49,12 @@ def seasonal_error(truth_series: List[float], season_length: int) -> float:
         errors.append(abs(truth_series[t] - truth_series[t - season_length]))
     return sum(errors) / len(errors) if errors else float("nan")
 
+def seasonal_error_series(season_length: int):
+    def _series_func(ts: DiseaseTimeSeries, _fc: Forecast):
+        y = [float(o.disease_cases) for o in ts.observations]
+        return {"seasonal_error": seasonal_error(y, season_length)}
+    return _series_func
+
 ## NEW: ----------------------------------------------------------------------
 
 def parse_ym(date: str) -> Tuple[int, int]:

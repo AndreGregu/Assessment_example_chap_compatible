@@ -27,13 +27,13 @@ metrics_metadata = [
     MetricMetadata(
         name="abs_target_sum",
         description="Total magnitude of the true values",
-        fromula="abs_target_sum = sum(|Y|)",
+        formula="abs_target_sum = sum(|Y|)",
         input_type="MultiLocationDiseaseTimeSeries",
         aggregation="region, time",
     ),
     MetricMetadata(
         name="mse",
-        interpretation="Mean squared error",
+        description="Mean squared error",
         formula="mse = mean((Y - Y^ )^2)",
         input_type="MultiLocationDiseaseTimeSeries, MultiLocationForecast",
         aggregation="region, time",
@@ -93,6 +93,20 @@ metrics_metadata = [
         formula="quantile_loss = 2 * sum(|(Y - Y^) * (Y <= Y^) - q|)",
         input_type="MultiLocationDiseaseTimeSeries, MultiLocationForecast",
         aggregation="region, time",
+    ),
+    MetricMetadata(
+        name="rmse",
+        description="Root Mean Squared Error",
+        formula="rmse = sqrt(mean((Y - Y^ )^2))",
+        input_type="MultiLocationDiseaseTimeSeries, MultiLocationForecast",
+        aggregation="region, time",
+    ),
+    MetricMetadata(
+        name="peak_value_diff",
+        description="Difference between the highest observed peak and the highest predicted peak (across datasets; ties broken by earliest month).",
+        formula="peak_value_diff = max(Y) - max(Y^)",
+        input_type="Dict[str, {observations: MultiLocationDiseaseTimeSeries, samples: MultiLocationForecast}]",
+        aggregation="dataset",
     ),
 ]
 

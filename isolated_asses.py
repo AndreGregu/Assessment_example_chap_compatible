@@ -11,6 +11,7 @@ from representations import DiseaseObservation, Forecast, MultiLocationDiseaseTi
     MultiLocationForecast, MultiLocationErrorTimeSeries
 from typing import List, Dict
 from dataclasses import dataclass
+from metadata import get_metric_metadata
 
 #Or use HealthData class or HealthObservation class??
 ## TRUTH VALUES: ------------------------------------------------------
@@ -101,51 +102,62 @@ print("\nCross-dataset peak metrics", cross)
 ## COMPONENT BASED EVALUATORS: ------------------------------------------------------
 
 # Point forecast error: 
-abs_error_timepoint_evaluator = ComponentBasedEvaluator("AbsError", abs_error, None, None)
+abs_error_timepoint_evaluator = ComponentBasedEvaluator("AbsError", abs_error, None, None, get_metric_metadata("abs_error"))
 abs_errors = abs_error_timepoint_evaluator.evaluate(observations_a, samples_a)
 print(f"\nAbsolute error timepoint: {abs_errors}")
 
-abs_target_mean_evaluator = ComponentBasedEvaluator("AbsError target mean", absolute_target, mean_across_time, None)
+abs_target_mean_evaluator = ComponentBasedEvaluator("AbsError target mean", absolute_target, mean_across_time, None, get_metric_metadata("abs_target_mean"))
 abs_target_mean = abs_target_mean_evaluator.evaluate(observations_a, samples_a)
 print(f"\nAbsolute target mean: {abs_target_mean}")
 
-abs_target_sum_evaluator = ComponentBasedEvaluator("AbsError target sum", absolute_target, sum_across_time, None)
+abs_target_sum_evaluator = ComponentBasedEvaluator("AbsError target sum", absolute_target, sum_across_time, None, get_metric_metadata("abs_target_sum"))
 abs_target_sum = abs_target_sum_evaluator.evaluate(observations_a, samples_a)
 print(f"\nAbsolute target sum: {abs_target_sum}")
 
-mse_evaluator = ComponentBasedEvaluator("MSE", mse_error, mean_across_time, None)
+mse_evaluator = ComponentBasedEvaluator("MSE", mse_error, mean_across_time, None, get_metric_metadata("mse"))
 mse = mse_evaluator.evaluate(observations_a, samples_a)
 print(f"\nMSE component-based: {mse}")
 
 #Percentage error:
-mape_evaluator = ComponentBasedEvaluator("MAPE", mape_error, mean_across_time, None)
+mape_evaluator = ComponentBasedEvaluator("MAPE", mape_error, mean_across_time, None, get_metric_metadata("mape"))
 mape = mape_evaluator.evaluate(observations_a, samples_a)
 print(f"\nMAPE component-based: {mape}")
 
-smape_component_evaluator = ComponentBasedEvaluator("SMAPE", smape_error, mean_across_time, None)
+smape_component_evaluator = ComponentBasedEvaluator("SMAPE", smape_error, mean_across_time, None, get_metric_metadata("smape"))
 smape2 = smape_component_evaluator.evaluate(observations_a, samples_a)
 print(f"\nSMAPE component-based: {smape2}")
 
-smape_country_evaluator = ComponentBasedEvaluator("SMAPE country", smape_error, mean_across_time, mean_across_regions)
+smape_country_evaluator = ComponentBasedEvaluator("SMAPE country", smape_error, mean_across_time, mean_across_regions, get_metric_metadata("smape"))
 smape_country = smape_country_evaluator.evaluate(observations_a, samples_a)
 print(f"\nSMAPE country: {smape_country}")
 
 # Scaled error with seasonality (Not done):
+season_len = 1  # <-- adjust to your dataset (e.g., 7, 12, 52)
+seasonal_error_evaluator = ComponentBasedEvaluator(
+    "Seasonal error",
+    errorFunc=None,
+    timeAggregationFunc=None,
+    regionAggregationFunc=None,  # or mean_across_regions if you want a single regional number
+    metadata=get_metric_metadata("seasonal_error"),
+    seriesErrorFunc=seasonal_error_series(season_len),
+)
 
+seasonal_err_result = seasonal_error_evaluator.evaluate(observations_a, samples_a)
+print("\nSeasonal error:", seasonal_err_result)
 # MAE
-mae_component_evaluator = ComponentBasedEvaluator("MAE", mae_error, mean_across_time, None)
+mae_component_evaluator = ComponentBasedEvaluator("MAE", mae_error, mean_across_time, None, get_metric_metadata("mae"))
 mae2 = mae_component_evaluator.evaluate(observations_a, samples_a)
 print(f"\nMAE component-based: {mae2}")
 
-mae_country_evaluator = ComponentBasedEvaluator("MAE country", mae_error, mean_across_time, mean_across_regions)
+mae_country_evaluator = ComponentBasedEvaluator("MAE country", mae_error, mean_across_time, mean_across_regions, get_metric_metadata("mae"))
 mae_country = mae_country_evaluator.evaluate(observations_a, samples_a)
 print(f"\nMAE country: {mae_country}")
 
-rmse_evaluator = ComponentBasedEvaluator("rmse", mse_error, sqrt_mean_across_time, None)
+rmse_evaluator = ComponentBasedEvaluator("rmse", mse_error, sqrt_mean_across_time, None, get_metric_metadata("rmse"))
 rmse = rmse_evaluator.evaluate(observations_a, samples_a)
 print(f"\nRMSE component-based: {rmse}")
 
-absError_timepoint_evaluator = ComponentBasedEvaluator("MAE timpeoint", mae_error, None, None)
+absError_timepoint_evaluator = ComponentBasedEvaluator("MAE timpeoint", mae_error, None, None, None)
 mae_timepoint = absError_timepoint_evaluator.evaluate(observations_a, samples_a)
 print(f"\nMAE timpeoint: {mae_timepoint}")
 
