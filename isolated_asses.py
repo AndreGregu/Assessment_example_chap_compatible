@@ -88,8 +88,14 @@ NEW_evaluator = EvaluatorsonMeanPredictions()
 smape = NEW_evaluator.evaluate(observations_a, samples_a)
 print(f"\nSMAPE: {smape}")
 
-# ---- Example: run it on both datasets and print ----
-peak_evaluator = PeakMetricsEvaluator()
+peak_evaluator = ComponentBasedEvaluator(
+    name="Peak metrics",
+    errorFunc=None,           
+    timeAggregationFunc=None,  
+    regionAggregationFunc=None,     
+    metadata=get_metric_metadata("peak_value_diff"),
+    seriesErrorFunc=peak_series_error,
+)
 
 peak_a = peak_evaluator.evaluate(datasets["dataset_a"]["observations"], datasets["dataset_a"]["samples"])
 peak_b = peak_evaluator.evaluate(datasets["dataset_b"]["observations"], datasets["dataset_b"]["samples"])
@@ -99,7 +105,6 @@ print_peak("\nPeak metrics - dataset_b", peak_b)
 
 cross = compute_cross_dataset_peak_metrics(datasets)
 print("\nCross-dataset peak metrics", cross)
-## COMPONENT BASED EVALUATORS: ------------------------------------------------------
 
 # Point forecast error: 
 abs_error_timepoint_evaluator = ComponentBasedEvaluator("AbsError", abs_error, None, None, get_metric_metadata("abs_error"))

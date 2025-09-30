@@ -116,6 +116,21 @@ def find_peak_pred_multiloc(list: MultiLocationForecast) -> Tuple[str, float, st
     _, _, month, loc = best
     return month, best[0], loc
 
+def peak_series_error(truth_ts: DiseaseTimeSeries, forecast: Forecast) -> dict[str, float]:
+    """
+    Returns per-series peak metrics:
+      - peak_value_diff: truth_peak_value - pred_peak_mean_value
+      - peak_month_lag:  months(pred_peak) - months(truth_peak)
+                         (positive => prediction peaks later)
+    """
+    truth_month, truth_val = find_peak_truth(truth_ts)        # (str, int)
+    pred_month, pred_val = find_peak_pred(forecast)         # (str, float)
+
+    return {
+        "peak_value_diff": float(truth_val - pred_val),
+        "peak_month_lag":  float(month_diff(truth_month, pred_month)),
+    }
+
 def compute_cross_dataset_peak_metrics(
     datasets: Dict[str, Dict[str, Any]]
 ) -> Dict[str, Any]:
