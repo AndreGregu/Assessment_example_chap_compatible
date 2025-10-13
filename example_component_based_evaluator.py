@@ -117,12 +117,6 @@ def find_peak_pred_multiloc(list: MultiLocationForecast) -> Tuple[str, float, st
     return month, best[0], loc
 
 def peak_series_error(truth_ts: DiseaseTimeSeries, forecast: Forecast) -> dict[str, float]:
-    """
-    Returns per-series peak metrics:
-      - peak_value_diff: truth_peak_value - pred_peak_mean_value
-      - peak_month_lag:  months(pred_peak) - months(truth_peak)
-                         (positive => prediction peaks later)
-    """
     truth_month, truth_val = find_peak_truth(truth_ts)        # (str, int)
     pred_month, pred_val = find_peak_pred(forecast)         # (str, float)
 
@@ -134,11 +128,11 @@ def peak_series_error(truth_ts: DiseaseTimeSeries, forecast: Forecast) -> dict[s
 def compute_cross_dataset_peak_metrics(
     datasets: Dict[str, Dict[str, Any]]
 ) -> Dict[str, Any]:
-    best_truth = None  # (value, month_idx, month_str, dataset, location)
-    best_pred = None   # (value, month_idx, month_str, dataset, location)
+    best_truth = None 
+    best_pred = None  
     for data_name, items in datasets.items():
-        l_truth: MultiLocationDiseaseTimeSeries = items["observations"]  # type: ignore[assignment]
-        l_pred: MultiLocationForecast = items["samples"]                  # type: ignore[assignment]
+        l_truth: MultiLocationDiseaseTimeSeries = items["observations"]
+        l_pred: MultiLocationForecast = items["samples"]                  
         truth_month, truth_val, truth_loc = find_peak_truth_multiloc(l_truth)
         pred_month, pred_val, pred_loc = find_peak_pred_multiloc(l_pred)
         truth_cand = (float(truth_val), month_index(truth_month), truth_month, data_name, truth_loc)

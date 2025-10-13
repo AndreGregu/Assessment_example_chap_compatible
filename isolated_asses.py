@@ -142,7 +142,7 @@ seasonal_error_evaluator = ComponentBasedEvaluator(
     "Seasonal error",
     errorFunc=None,
     timeAggregationFunc=None,
-    regionAggregationFunc=None,  # or mean_across_regions if you want a single regional number
+    regionAggregationFunc=None, 
     metadata=get_metric_metadata("seasonal_error"),
     seriesErrorFunc=seasonal_error_series(season_len),
 )
