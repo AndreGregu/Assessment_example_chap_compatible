@@ -13,7 +13,7 @@ This means that every predicted disease case can be tied to four variables:
 
 - `location`
 - `time_period`
-- `horizon_distance`  (how far from a split point was this prediction made)
+- `horizon_distance`  (how far from a split point was this prediction made).
 - `sample` (just an index for the sample, if the model gives 10 predictions for this location/time_period/horizon_distance, then this will go from 0 to 9)
 
 When dealing with metrics in chap, we represent all this information using a "flat" pandas dataframe. Below is an example of the predictions given by a model for two different locations two weeks ahead:
