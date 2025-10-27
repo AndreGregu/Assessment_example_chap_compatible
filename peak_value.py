@@ -25,6 +25,14 @@ def _pick_peak(rows: pd.DataFrame, value_col: str) -> tuple[str, float]:
     top = tmp.iloc[0]
     return str(top['time_period']), float(top[value_col])
 
+def forecast_mean(forecasts: FlatForecasts) -> pd.DataFrame:
+    return (
+        forecasts
+        .groupby(["location", "time_period", "sample"], as_index=False)["forecast"]
+        .mean()
+        .rename(columns={"forecast": "forecast_sample_mean"})
+    )
+
 
 # =========================================
 # Metric 1: Peak value difference (truth - pred)
@@ -38,17 +46,12 @@ class PeakValueDiffMetric(MetricBase):
     )
 
     def compute(self, observations: FlatObserved, forecasts: FlatForecasts) -> pd.DataFrame:
-        fc_mean = (
-            forecasts
-            .groupby(['location', 'time_period'], as_index=False)['forecast']
-            .mean()
-            .rename(columns={'forecast': 'forecast_mean'})
-        )
+        fc = forecast_mean(forecasts)
 
         obs = observations[['location', 'time_period', 'disease_cases']].copy()
         out_rows = []
         for loc, obs_loc in obs.groupby('location'):
-            fc_loc = fc_mean[fc_mean['location'] == loc]
+            fc_loc = fc[fc['location'] == loc]
             if obs_loc.empty or fc_loc.empty:
                 continue
             _, truth_val = _pick_peak(
@@ -78,17 +81,12 @@ class PeakWeekLagMetric(MetricBase):
     )
 
     def compute(self, observations: FlatObserved, forecasts: FlatForecasts) -> pd.DataFrame:
-        fc_mean = (
-            forecasts
-            .groupby(['location', 'time_period'], as_index=False)['forecast']
-            .mean()
-            .rename(columns={'forecast': 'forecast_mean'})
-        )
+        fc = forecast_mean(forecasts) 
         obs = observations[['location', 'time_period', 'disease_cases']].copy()
 
         out = []
         for loc, obs_loc in obs.groupby('location'):
-            fc_loc = fc_mean[fc_mean['location'] == loc]
+            fc_loc = fc[fc['location'] == loc]
             if obs_loc.empty or fc_loc.empty:
                 continue
 
