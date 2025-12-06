@@ -1,7 +1,10 @@
 Turtorial for how to implement metrics based on this example metric system
 -Andre Gregussen
 
+This system is a tutorial for how to implement metrics and components in chap. The goal of this repository-version is to learn how to implement metrics spesifically. A metric is a way of evaluating a models based on its perfromance. By comparing the truth- and prediction values, we can analyse the models performance on spesific cases.  
+
 # Tutorial
+
 
 
 
