@@ -5,7 +5,26 @@ This system is a tutorial for how to implement metrics and components in chap. T
 
 # Tutorial
 
+## 1. Setting up a virtual environment
 
+Usually we set up an environment on our comptuer that acts as a box for our dependencies, in order to keep the computer clean. This will allows us to download spesific pakages for this system that does not affect the version models of other system-packages. 
+
+In order to coreate a virutal environment, go to the project folder and insert the following command line code.: 
+
+```bash
+
+User:/../ProjectFolder$ python -m venv venv
+
+```
+This creates a virtual environment in your project folder that can be activated by inserting the following command line code: 
+
+```bash
+
+User:/../ProjectFolder$ surce venv/bin/activate
+
+```
+
+In order to run source we have to be in a wsl-terminal
 
 
 ## Pre-requirements
