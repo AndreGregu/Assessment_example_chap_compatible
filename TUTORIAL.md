@@ -93,7 +93,7 @@ The observations represent the same time sections as the prediction values.
 
 ### 4.1 Isolated example
 
-`isolated_asses.py` is an isolated example of how a simple metric can be implemented and run independantly.
+`isolated_asses.py` is an isolated example of how a simple metric can be implemented and run independently.
 The data is hard-coded as a pandas Dataframe into the script: 
 
 ```bash
@@ -114,7 +114,7 @@ The forecast and observation data is then passed to the metric:
 def my_metric(forecasts: pd.DataFrame, observations: pd.DataFrame) -> pd.DataFrame:
 
 ```
-The metric in this example is Absolute Error which is defined as:
+The error function in this example is Absolute Error which is defined as:
 
 ```bash
 
@@ -122,9 +122,29 @@ Absolute Error = |Forecast - Observation|
 
 ```
 
-**NOT DONE**
+The forecast values are merged with the observation values where the `location` and `time_period` collumns match. 
 
+The absolute error is calculated from the values, and a final dataframe with the collumns `location`, `time_period`, and `metric` *(which is the metric error-function value)* is returned: 
 
+```bash
+
+def my_metric(forecasts: pd.DataFrame, observations: pd.DataFrame) -> pd.DataFrame:
+    # sum of absolute error per location and time_period
+    merged = forecasts.merge(observations, on=["location", "time_period"], how="left")
+    merged["metric"] = (merged["forecast"] - merged["disease_cases"]).abs()
+    return merged[["location", "time_period", "metric"]]
+
+```
+
+In order to run the isolated example, run the following command: 
+
+```bash
+
+User:/../ProjectFolder/$ python isolated_asses.py
+
+```
+
+### 4.2 System structure
 
 
 `example_metric.py` displays how a metric is implemented in order to be CHAP-compatible. 
