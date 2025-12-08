@@ -24,7 +24,7 @@ User:/../ProjectFolder$ surce venv/bin/activate
 
 ```
 
-In order to run source you have to be in a wsl-terminal
+In order to run source you have to be in a wsl-terminal.
 
 
 ## 2. Pre-requirements
@@ -51,35 +51,25 @@ In this tutorial based system, we use flat data in CSV files located in the foll
 
 ```bash
 
-User:/../ProjectFolder/example_data$
+User:/../ProjectFolder/example_data/$
 
 ```
 
-The data is defined as "flat" because all the data lives in one table wihtout any nested lists, hierarchical structures, or multi-level JSON objects. 
+The data is defined as "flat" because all the data lives in one table wihtout any nested lists, hierarchical structures, or multi-level JSON objects.
 
 ### 3.1 forecast.csv
 
 The forecast data in `forecast.csv` visualizes the predictions. The first row is a header defining the fields: 
 
-- location
+- location *(The designnated location for which the predictions are located)*
 
-*The designnated location for which the predictions are located*
+- time_period *(Which time period is beeing predicted)*
 
-- time_period
+- horizon_distance *(How many months/weeks prior to the time period the prediction was made)*
 
-*Which time period is beeing predicted*
+- sample *(Sample identifier for several values per time_period)*
 
-- horizon_distance
-
-*How many months/weeks prior to the time period the prediction was made*
-
-- sample
-
-*Sample identifier*
-
-- forecast
-
-*Prediction value*
+- forecast *(Prediction value)*
 
 Each location has predictions in two seperate time sections: 
 
@@ -89,45 +79,53 @@ Each location has predictions in two seperate time sections:
 
 ### 3.2 observations.csv
 
-Similarly, the observation data visualizes the observations (actual values). The first row is a header defining the fields: 
+Similarly, the observation data visualizes the observations *(actual values)*. The first row is a header defining the fields: 
 
 - location
 
 - time_period
 
-- disease_cases
+- disease_cases *(Truth value)*
 
-*Truth value*
+The observations represent the same time sections as the prediction values.
 
+## 4. Functionality
 
-## File Structure
- 
-```bash  
+### 4.1 Isolated example
 
-project_root/
+`isolated_asses.py` is an isolated example of how a simple metric can be implemented and run independantly.
+The data is hard-coded as a pandas Dataframe into the script: 
 
-├── example_data/
+```bash
 
-│   └── forecasts.csv
+    {
+        "location": ["loc1", "loc1", "loc2", "loc2"],
+        "time_period": ["2023-W01", "2023-W02", "2023-W01", "2023-W02"],
+        "horizon_distance": [1, 2, 1, 2],
+        "sample": [1, 1, 1, 1],
+        "forecast": [10, 12, 21, 23],
+    }
 
-│   └── observations.csv
+```
+The forecast and observation data is then passed to the metric: 
 
-├── example_metric.py
+```bash
 
-├── isolated_asses.py
+def my_metric(forecasts: pd.DataFrame, observations: pd.DataFrame) -> pd.DataFrame:
 
-├── README.md
+```
+The metric in this example is Absolute Error which is defined as:
 
-├── representations.py
+```bash
 
-├── TUTORIAL.md  
-
+Absolute Error = |Forecast - Observation|
 
 ```
 
+**NOT DONE**
 
 
-## Functionality
+
 
 `example_metric.py` displays how a metric is implemented in order to be CHAP-compatible. 
 
@@ -153,7 +151,30 @@ The metric recieves the data and calculates absolute error, then prints the resu
 
 `representations.py` defines the representations used in the system. 
 
+## File Structure
+ 
+```bash  
 
+project_root/
+
+├── example_data/
+
+│   └── forecasts.csv
+
+│   └── observations.csv
+
+├── example_metric.py
+
+├── isolated_asses.py
+
+├── README.md
+
+├── representations.py
+
+├── TUTORIAL.md  
+
+
+```
 
 ## Implementing A New Metric
 
