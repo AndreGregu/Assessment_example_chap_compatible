@@ -7,9 +7,9 @@ This system is a tutorial for how to implement metrics and components in chap. T
 
 ## 1. Setting up a virtual environment
 
-Usually we set up an environment on our comptuer that acts as a box for our dependencies, in order to keep the computer clean. This will allows us to download spesific pakages for this system that does not affect the version models of other system-packages. 
+Usually we set up an environment on our comptuer that acts as a box for our dependencies, in order to keep the computer clean. This will allows us to download spesific packages for this system that does not affect the version models of other system-packages. 
 
-In order to coreate a virutal environment, go to the project folder and insert the following command line code.: 
+In order to create a virutal environment, go to the project folder and insert the following command line code: 
 
 ```bash
 
@@ -24,14 +24,18 @@ User:/../ProjectFolder$ surce venv/bin/activate
 
 ```
 
-In order to run source we have to be in a wsl-terminal
+In order to run source you have to be in a wsl-terminal
 
 
-## Pre-requirements
+## 2. Pre-requirements
 
-- install jsonschema package
+There are some dependency pakages that are required in order to run this system: 
 
-- install pandera package 
+- jsonschema package
+
+- pandera package 
+
+Activate the virtual environment you have created in your project folder and run the following commands: 
 
 ```bash
 
@@ -41,6 +45,53 @@ pip install pandera
 
 ```
 
+## 3. Data explanation
+
+In this tutorial based system, we use flat data in CSV files located in the following folder: 
+
+```bash
+
+User:/../ProjectFolder/example_data$
+
+```
+
+The data is defined as "flat" because all the data lives in one table wihtout any nested lists, hierarchical structures, or multi-level JSON objects. 
+
+### 3.1 forecast.csv
+
+The forecast data in `forecast.csv` visualizes the predictions. The first row is a header defining the fields: 
+
+- location
+**Note** The designnated location for which the predictions are located
+
+- time_period
+**Note** Which time period is beeing predicted
+
+- horizon_distance
+**Note** How many months/weeks prior to the time period the prediction was made 
+
+- sample
+**Note** Sample identifier
+
+- forecast
+**Note** Prediction value
+
+Each location has predictions in two seperate time sections: 
+
+- Week 1-2 in 2023
+
+- Week 8-9 in 2023
+
+### 3.2 observations.csv
+
+Similarly, the observation data visualizes the observations (actual values). The first row is a header defining the fields: 
+
+- location
+
+- time_period
+
+- disease_cases
+**Note** Truth value
 
 
 ## File Structure
