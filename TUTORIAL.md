@@ -62,19 +62,24 @@ The data is defined as "flat" because all the data lives in one table wihtout an
 The forecast data in `forecast.csv` visualizes the predictions. The first row is a header defining the fields: 
 
 - location
-*Note: The designnated location for which the predictions are located*
+
+*The designnated location for which the predictions are located*
 
 - time_period
-*Note: Which time period is beeing predicted*
+
+*Which time period is beeing predicted*
 
 - horizon_distance
-*Note: How many months/weeks prior to the time period the prediction was made*
+
+*How many months/weeks prior to the time period the prediction was made*
 
 - sample
-*Note: Sample identifier*
+
+*Sample identifier*
 
 - forecast
-*Note: Prediction value*
+
+*Prediction value*
 
 Each location has predictions in two seperate time sections: 
 
@@ -91,7 +96,8 @@ Similarly, the observation data visualizes the observations (actual values). The
 - time_period
 
 - disease_cases
-*Note: Truth value*
+
+*Truth value*
 
 
 ## File Structure
