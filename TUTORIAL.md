@@ -91,13 +91,14 @@ The observations represent the same time sections as the prediction values.
 
 ## 4. Functionality
 
-### 4.1 Isolated example
+### 4.1 Isolated metric implementation
 
 `isolated_asses.py` is an isolated example of how a simple metric can be implemented and run independently.
 The data is hard-coded as a pandas Dataframe into the script: 
 
 ```bash
 
+forecasts = pd.DataFrame(
     {
         "location": ["loc1", "loc1", "loc2", "loc2"],
         "time_period": ["2023-W01", "2023-W02", "2023-W01", "2023-W02"],
@@ -105,6 +106,16 @@ The data is hard-coded as a pandas Dataframe into the script:
         "sample": [1, 1, 1, 1],
         "forecast": [10, 12, 21, 23],
     }
+)
+
+
+observations = pd.DataFrame(
+    {
+        "location": ["loc1", "loc1", "loc2", "loc2"],
+        "time_period": ["2023-W01", "2023-W02", "2023-W01", "2023-W02"],
+        "disease_cases": [11.0, 13.0, 19.0, 21.0],
+    }
+)
 
 ```
 The forecast and observation data is then passed to the metric: 
@@ -129,14 +140,13 @@ The absolute error is calculated from the values, and a final dataframe with the
 ```bash
 
 def my_metric(forecasts: pd.DataFrame, observations: pd.DataFrame) -> pd.DataFrame:
-    # sum of absolute error per location and time_period
     merged = forecasts.merge(observations, on=["location", "time_period"], how="left")
     merged["metric"] = (merged["forecast"] - merged["disease_cases"]).abs()
     return merged[["location", "time_period", "metric"]]
 
 ```
 
-In order to run the isolated example, run the following command: 
+In order to run the isolated example, insert the following command line code: 
 
 ```bash
 
@@ -144,8 +154,11 @@ User:/../ProjectFolder/$ python isolated_asses.py
 
 ```
 
-### 4.2 System structure
+### 4.2 CHAP-compatible metric implementation
 
+The rest of the system teaches you have to implement a CHAP-compatible metric which is part of a larger ecosystem. The tutorial displays how to create reusable components which can be ...
+
+### 4.2.1 example_metric.py
 
 `example_metric.py` displays how a metric is implemented in order to be CHAP-compatible. 
 
@@ -158,6 +171,7 @@ The class contains:
 - `def compute()` where the error function is calculated. 
 
 The initialiser retrieves the metric, calles the function and prints the values. 
+
 
 
 
