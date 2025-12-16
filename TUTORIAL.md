@@ -96,7 +96,7 @@ The observations represent the same time sections as the prediction values.
 `isolated_asses.py` is an isolated example of how a simple metric can be implemented and run independently.
 The data is hard-coded as a pandas Dataframe into the script: 
 
-```bash
+```python
 
 forecasts = pd.DataFrame(
     {
@@ -120,7 +120,7 @@ observations = pd.DataFrame(
 ```
 The forecast and observation data is then passed to the metric: 
 
-```bash
+```python
 
 def my_metric(forecasts: pd.DataFrame, observations: pd.DataFrame) -> pd.DataFrame:
 
@@ -135,9 +135,9 @@ Absolute Error = |Forecast - Observation|
 
 The forecast values are merged with the observation values where the `location` and `time_period` collumns match. 
 
-The absolute error is calculated from the values, and a final dataframe with the collumns `location`, `time_period`, and `metric` *(which is the metric error-function value)* is returned: 
+The absolute error is calculated from the values, and a final dataframe with the columns `location`, `time_period`, and `metric` *(which is the metric error-function value)* is returned: 
 
-```bash
+```python
 
 def my_metric(forecasts: pd.DataFrame, observations: pd.DataFrame) -> pd.DataFrame:
     merged = forecasts.merge(observations, on=["location", "time_period"], how="left")
@@ -160,30 +160,52 @@ The rest of the system teaches you have to implement a CHAP-compatible metric wh
 
 ### 4.2.1 example_metric.py
 
-`example_metric.py` displays how a metric is implemented in order to be CHAP-compatible. 
+`example_metric.py` displays how a metric is implemented in order to be CHAP-compatible. This code uses the flat data in the `example_data` folder. 
 
-This code uses data formated in a pandas dataframe that can be found in the `example_data` folder. 
+The class definition defines a custom class named `ExampleMetric` which builds on the base class for all metrics called `MetricBase`:
 
-The class contains: 
+```python
 
-- `MetricSpec()` which identifies which metric is used, in addition to relevant metadata related to the metric. 
+class ExampleMetric(MetricBase):
 
-- `def compute()` where the error function is calculated. 
+``` 
 
-The initialiser retrieves the metric, calles the function and prints the values. 
+Each Metric requires specifications which is a requirement by the metric base class, which serves as metadata describing the metric to the framework:
 
+```python
 
+spec = MetricSpec(
+        output_dimensions=(DataDimension.time_period, DataDimension.location),
+        metric_name="Example Absolute Error",
+        metric_id="example_metric",
+        description="Sum of absolute error per location and time_period",
+    )
 
+```
 
-`isolated_asses.py` displays a single metric with hard-coded forecasts and predictions.
+This metric calculates Absolute Error which is the same metric which was used in `isolated_asses`.
 
-The metric recieves the data and calculates absolute error, then prints the result. 
+In addition to the metric spesification, all metrics require a compute function which calculates the metric error value: 
 
-**NOTE** This example is just an example of a metric, but not how it should be propperly implemented. 
+```python
 
+def compute(self, observations: FlatObserved, forecasts: FlatForecasts) -> pd.DataFrame:
+    merged = forecasts.merge(observations, on=["location", "time_period"], how="left")
+    merged["metric"] = (merged["forecast"] - merged["disease_cases"]).abs()
+    return merged[["location", "time_period", "metric"]]
 
+```
 
-`representations.py` defines the representations used in the system. 
+Similarly to the `isolated_asses` example, this function calculates absolute error from the values, and a final dataframe with the columns `location`, `time_period`, and `metric` *(which is the metric error-function value)* is returned. 
+
+A noticeable difference is that this compute function receives data in the format of FlatObserved and FlatForecasts which are predefined validation classes to ensure correct structure on data dimensions imported through: 
+
+```python
+
+from chap_core.assessment.flat_representations import DataDimension, FlatForecasts, FlatObserved
+
+```
+
 
 ## File Structure
  
