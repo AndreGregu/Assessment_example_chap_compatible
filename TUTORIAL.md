@@ -1,41 +1,42 @@
-Turtorial for how to implement metrics based on this example metric system
--Andre Gregussen
+# Tutorial: Implementing Metrics Using the Example Metric System
 
-This system is a tutorial for how to implement metrics and components in chap. The goal of this repository-version is to learn how to implement metrics spesifically. A metric is a way of evaluating a models based on its perfromance. By comparing the truth- and prediction values, we can analyse the models performance on spesific cases.  
+*Andre Gregussen*
 
-# Tutorial
+This tutorial demonstrates how to implement metrics and components in CHAP. The goal of this repository version is to learn how to implement metrics specifically.
+
+A metric is a way of evaluating a model based on its performance. By comparing observed *(truth)* values with forecasted *(prediction)* values, we can analyze how well a model performs in specific scenarios.
 
 ## 1. Setting up a virtual environment
 
-Usually we set up an environment on our comptuer that acts as a box for our dependencies, in order to keep the computer clean. This will allows us to download spesific packages for this system that does not affect the version models of other system-packages. 
+It is recommended to set up a virtual environment to isolate project dependencies and avoid conflicts with system-wide packages.
 
-In order to create a virutal environment, go to the project folder and insert the following command line code: 
-
-```bash
-
-User:/../ProjectFolder$ python -m venv venv
-
-```
-This creates a virtual environment in your project folder that can be activated by inserting the following command line code: 
+To create a virtual environment, navigate to the project folder and run:
 
 ```bash
 
-User:/../ProjectFolder$ surce venv/bin/activate
+python -m venv venv
+
+```
+This creates a virtual environment in the project directory. Activate it using:
+
+```bash
+
+source venv/bin/activate
 
 ```
 
-In order to run source you have to be in a wsl-terminal.
+**Note:** Activating the environment using source requires a WSL or Unix-like terminal.
 
 
 ## 2. Pre-requirements
 
-There are some dependency pakages that are required in order to run this system: 
+The following dependency packages are required to run this system:
 
-- jsonschema package
+- `jsonschema`
 
-- pandera package 
+- `pandera` 
 
-Activate the virtual environment you have created in your project folder and run the following commands: 
+Activate the virtual environment and install the dependencies:
 
 ```bash
 
@@ -47,54 +48,55 @@ pip install pandera
 
 ## 3. Data explanation
 
-In this tutorial based system, we use flat data in CSV files located in the following folder: 
+This tutorial uses flat CSV data located in the following directory:
 
 ```bash
 
-User:/../ProjectFolder/example_data/$
+example_data/
 
 ```
 
-The data is defined as "flat" because all the data lives in one table wihtout any nested lists, hierarchical structures, or multi-level JSON objects.
+The data is considered flat because all values exist in a single table without nested lists, hierarchical structures, or multi-level JSON objects.
 
 ### 3.1 forecast.csv
 
-The forecast data in `forecast.csv` visualizes the predictions. The first row is a header defining the fields: 
+The `forecasts.csv` file contains prediction data. The header defines the following fields:
 
-- location *(The designnated location for which the predictions are located)*
+- location - *The location for which predictions are made*
 
-- time_period *(Which time period is beeing predicted)*
+- time_period - *The time period being predicted*
 
-- horizon_distance *(How many months/weeks prior to the time period the prediction was made)*
+- horizon_distance - *How far in advance the prediction was made*
 
-- sample *(Sample identifier for several values per time_period)*
+- sample - *Sample identifier for multiple predictions per time period*
 
-- forecast *(Prediction value)*
+- forecast - *The predicted value*
 
-Each location has predictions in two seperate time sections: 
+Each location contains predictions for two time periods:
 
-- Week 1-2 in 2023
+- Weeks 1-2 in 2023
 
-- Week 8-9 in 2023
+- Weeks 8-9 in 2023
 
 ### 3.2 observations.csv
 
-Similarly, the observation data visualizes the observations *(actual values)*. The first row is a header defining the fields: 
+The `observations.csv` file contains observed *(actual)* values. The fields are:
 
 - location
 
 - time_period
 
-- disease_cases *(Truth value)*
+- disease_cases - *The observed (truth) value*
 
-The observations represent the same time sections as the prediction values.
+The observations correspond to the same time periods as the forecast data.
 
 ## 4. Functionality
 
 ### 4.1 Isolated metric implementation
 
-`isolated_asses.py` is an isolated example of how a simple metric can be implemented and run independently.
-The data is hard-coded as a pandas Dataframe into the script: 
+`isolated_assess.py` is an isolated example demonstrating how a simple metric can be implemented and executed independently.
+
+In this example, the forecast and observation data are hard-coded as pandas DataFrames:
 
 ```python
 
@@ -118,14 +120,14 @@ observations = pd.DataFrame(
 )
 
 ```
-The forecast and observation data is then passed to the metric: 
+The forecast and observation data are passed to the metric function:
 
 ```python
 
 def my_metric(forecasts: pd.DataFrame, observations: pd.DataFrame) -> pd.DataFrame:
 
 ```
-The error function in this example is Absolute Error which is defined as:
+The error function used in this example is **Absolute Error**, defined as:
 
 ```bash
 
@@ -133,9 +135,7 @@ Absolute Error = |Forecast - Observation|
 
 ```
 
-The forecast values are merged with the observation values where the `location` and `time_period` collumns match. 
-
-The absolute error is calculated from the values, and a final dataframe with the columns `location`, `time_period`, and `metric` *(which is the metric error-function value)* is returned: 
+Forecast and observation values are merged on the `location` and `time_period` columns. The absolute error is computed, and a final DataFrame containing `location`, `time_period`, and `metric` is returned:
 
 ```python
 
@@ -156,13 +156,13 @@ User:/../ProjectFolder/$ python isolated_asses.py
 
 ### 4.2 CHAP-compatible metric implementation
 
-The rest of the system teaches you have to implement a CHAP-compatible metric which is part of a larger ecosystem. The tutorial displays how to create reusable components which can be ...
+The rest of the system teaches you have to implement a CHAP-compatible metric which is part of a larger ecosystem.
 
 ### 4.2.1 example_metric.py
 
-`example_metric.py` displays how a metric is implemented in order to be CHAP-compatible. This code uses the flat data in the `example_data` folder. 
+`example_metric.py` demonstrates how to implement a CHAP-compatible metric using flat data stored in the `example_data` folder. 
 
-The class definition defines a custom class named `ExampleMetric` which builds on the base class for all metrics called `MetricBase`:
+The class definition creates a custom metric named `ExampleMetric` which inherits from `MetricBase`, the base class for all metrics in CHAP:
 
 ```python
 
@@ -170,7 +170,7 @@ class ExampleMetric(MetricBase):
 
 ``` 
 
-Each Metric requires specifications which is a requirement by the metric base class, which serves as metadata describing the metric to the framework:
+Each metric requires a specification *(`MetricSpec`)*, which provides metadata describing the metric to the framework:
 
 ```python
 
@@ -182,10 +182,11 @@ spec = MetricSpec(
     )
 
 ```
+This specification defines the output dimensions of the metric, a human-readable name, a unique identifier, and a description of the metric.
 
-This metric calculates Absolute Error which is the same metric which was used in `isolated_asses`.
+This metric calculates **absolute error** which, the same error metric used in the `isolated_asses` example.
 
-In addition to the metric spesification, all metrics require a compute function which calculates the metric error value: 
+In addition to the metric specification, all metrics must implement a `compute` function that performs the actual metric calculation: 
 
 ```python
 
@@ -196,9 +197,9 @@ def compute(self, observations: FlatObserved, forecasts: FlatForecasts) -> pd.Da
 
 ```
 
-Similarly to the `isolated_asses` example, this function calculates absolute error from the values, and a final dataframe with the columns `location`, `time_period`, and `metric` *(which is the metric error-function value)* is returned. 
+This function merges forecast and observed data on `location` and `time_period`, computes the absolute error for each row, and returns a DataFrame containing the required columns: `location`, `time_period`, and `metric` *(the computed error value)*. 
 
-A noticeable difference is that this compute function receives data in the format of FlatObserved and FlatForecasts which are predefined validation classes to ensure correct structure on data dimensions imported through: 
+A noticeable difference from the `isolated_asses` example is that the compute function receives data wrapped in `FlatObserved` and `FlatForecasts` objects, which are standardized data containers provided by CHAP. These classes enforce consistent schema and validation for observed and forecast data and are imported via:
 
 ```python
 
@@ -206,6 +207,51 @@ from chap_core.assessment.flat_representations import DataDimension, FlatForecas
 
 ```
 
+### 4.2.2 Integrating the metric in the rest of the system
+
+To integrate a custom metric in the CHAP system, we first need to clone a working version of the CHAP-core repository locally. The official CHAP-core codebase is avaliable at: 
+
+https://github.com/dhis2-chap/chap-core. 
+
+A step-by-step guide on how to set up and run CHAP-core can be found here: 
+
+https://dhis2-chap.github.io/chap-core/contributor/index.html.
+
+Once CHAP-core is running, the new metric file should be placed in the metrics directory located at: 
+
+```bash
+
+chap-core/chap_core/assessment/metrics/
+
+``` 
+
+This directory contains all existing metrics, including the `example_metric.py` used in this tutorial. 
+
+For the metric to be functional, it must be registered in the metrics registry. This registry is defined in the `__init__.py` file within the same metrics folder. 
+
+First, the metric must be imported from its module. 
+
+```python
+
+from chap_core.assessment.metrics.example_metric import ExampleMetric
+
+```
+
+Next, the metric must be added to both the `__all__` list and the `available_metrics` dictionary:
+
+```python
+
+__all__ = [
+    "ExampleMetric",
+]
+
+available_metrics = {
+    "example_metric": ExampleMetric,
+}
+
+```
+
+Registering the metric in this way allows it to be discovered, instantiated, and used throughout the CHAP assessment framework. 
 
 ## File Structure
  
@@ -231,21 +277,6 @@ project_root/
 
 
 ```
-
-## Implementing A New Metric
-
-In order to implement a new metric, the structure in `example_metric.py` should be followed. 
-
-Use `peak_value.py` as an example: 
-
-- If the metric requires complex mathematical formulas, the calculations should be component based. 
-     
-    In this code, `_parse_year_week`, `_week_index`, `_week_diff`, and `_pick_peak` are examples of this. 
-
-- The metric requires two classes since the structure of `MetricBase` only allows spesific attributes to be returned.
-
-- One class computes the value between the peaks in each location, and the other computes the weekly lag between the peaks. 
-
 
 ## Flaws in this system
 
