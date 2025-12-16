@@ -158,7 +158,7 @@ User:/../ProjectFolder/$ python isolated_asses.py
 
 The rest of the system teaches you have to implement a CHAP-compatible metric which is part of a larger ecosystem.
 
-### 4.2.1 example_metric.py
+#### 4.2.1 example_metric.py
 
 `example_metric.py` demonstrates how to implement a CHAP-compatible metric using flat data stored in the `example_data` folder. 
 
@@ -207,7 +207,7 @@ from chap_core.assessment.flat_representations import DataDimension, FlatForecas
 
 ```
 
-### 4.2.2 Integrating the metric in the rest of the system
+#### 4.2.2 Integrating the metric in the rest of the system
 
 To integrate a custom metric in the CHAP system, we first need to clone a working version of the CHAP-core repository locally. The official CHAP-core codebase is avaliable at: 
 
@@ -253,7 +253,7 @@ available_metrics = {
 
 Registering the metric in this way allows it to be discovered, instantiated, and used throughout the CHAP assessment framework. 
 
-## File Structure
+## 5. File Structure
  
 ```bash  
 
@@ -278,7 +278,7 @@ project_root/
 
 ```
 
-## Flaws in this system
+## 6. Flaws in this system
 
 In order to implement the `peak_value.py´`, we have to have two seperate classes as two individual metrics. 
 
